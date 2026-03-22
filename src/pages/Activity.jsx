@@ -90,7 +90,7 @@ export default function Activity() {
                     <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">This Month</p>
                     <p className="text-3xl font-bold text-gray-900 mt-1">${pendingRoundUps.toFixed(2)}</p>
                     <p className="text-xs font-semibold mt-1" style={{ color: brand.primary }}>
-                      → {selectedNonprofit.name.split(' ').slice(0,3).join(' ')}
+                      → {selectedNonprofit.name}
                     </p>
                   </div>
                   <div className="text-right">

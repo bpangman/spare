@@ -157,7 +157,7 @@ export default function Nonprofits() {
       >
         <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.3px' }}>Find a Cause</h1>
         <p className="text-white/70 text-sm mt-0.5">
-          Supporting: <span className="text-white font-semibold">{selectedNonprofit.name.split(' ').slice(0,3).join(' ')}</span>
+          Supporting: <span className="text-white font-semibold">{selectedNonprofit.name}</span>
         </p>
 
         {/* Search */}

@@ -6,7 +6,7 @@ const AppContext = createContext(null);
 export function AppProvider({ children }) {
   const [page, setPage] = useState('onboarding'); // onboarding | home
   const [tab, setTab] = useState('dashboard');
-  const [selectedNonprofit, setSelectedNonprofit] = useState(NONPROFITS[0]); // BGCA default
+  const [selectedNonprofit, setSelectedNonprofit] = useState(null); // set during onboarding cause-selection
   const [roundUpMultiplier, setRoundUpMultiplier] = useState(1);
   const [linkedCards, setLinkedCards] = useState([
     { id: 1, last4: '4242', brand: 'Visa', name: 'Chase Sapphire' },

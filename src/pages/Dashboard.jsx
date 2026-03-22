@@ -108,10 +108,10 @@ export default function Dashboard() {
             </div>
             <p className="text-white/60 text-sm mt-2">Since Jan 2026 · All time</p>
             <div className="mt-5 pt-4 border-t border-white/20 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <OrgLogo nonprofit={selectedNonprofit} size={8} rounded="full" className="bg-white/20" />
-                <div>
-                  <p className="text-white font-semibold text-sm">{selectedNonprofit.name.split(' ').slice(0, 3).join(' ')}</p>
+              <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+                <OrgLogo nonprofit={selectedNonprofit} size={8} rounded="full" className="bg-white/20 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-white font-semibold text-sm leading-snug">{selectedNonprofit.name}</p>
                   <p className="text-white/60 text-xs">Your chosen cause</p>
                 </div>
               </div>

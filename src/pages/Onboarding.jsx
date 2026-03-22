@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle, ArrowRight, Search } from 'lucide-react';
 import Logo from '../components/Logo';
+import OrgLogo from '../components/OrgLogo';
 import { useApp } from '../store/AppContext';
+import { NONPROFITS } from '../data/nonprofits';
+
+// Featured causes shown on the pick-your-cause screen
+const FEATURED_IDS = ['bgca', 'stjude', 'wwf', 'khanacademy', 'feedamerica'];
+const FEATURED = NONPROFITS.filter(n => FEATURED_IDS.includes(n.id));
 
 const SLIDES = [
   {
@@ -54,7 +61,7 @@ const SLIDES = [
     ),
     title: 'Round Up Every\nPurchase',
     subtitle: 'We round up each transaction to the nearest dollar. The spare change goes straight to your chosen nonprofit.',
-    cta: 'How It Works',
+    cta: 'Next',
   },
   {
     id: 2,
@@ -63,7 +70,7 @@ const SLIDES = [
       <div className="flex flex-col items-center gap-4">
         <div className="text-6xl mb-2">🌍</div>
         <div className="grid grid-cols-3 gap-2">
-          {['🐼', '📚', '🌾', '🏥', '🏠', '⚖️'].map((emoji, i) => (
+          {['🏀', '📚', '🌾', '🏥', '🏠', '⚖️'].map((emoji, i) => (
             <motion.div
               key={i}
               initial={{ scale: 0 }}
@@ -79,7 +86,7 @@ const SLIDES = [
     ),
     title: 'Choose Your\nCause',
     subtitle: 'Pick from hundreds of verified nonprofits across the causes you care about most.',
-    cta: 'Pick a Cause',
+    cta: 'Next',
   },
   {
     id: 3,
@@ -118,23 +125,188 @@ const SLIDES = [
     ),
     title: 'Watch Your\nImpact Grow',
     subtitle: 'Track every donation, see your cumulative impact, and share your generosity with others.',
-    cta: 'Start Giving',
+    cta: 'Pick Your Cause',
   },
 ];
 
+// ─── Cause selection screen ─────────────────────────────────────────────────
+
+function CauseCard({ nonprofit, selected, onSelect }) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={() => onSelect(nonprofit)}
+      className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left"
+      style={selected
+        ? { borderColor: nonprofit.brand.primary, background: nonprofit.brand.accentLight }
+        : { borderColor: '#f3f4f6', background: '#f9fafb' }
+      }
+    >
+      <OrgLogo nonprofit={nonprofit} size={12} rounded="xl" className="shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-gray-900 text-sm leading-snug">{nonprofit.name}</p>
+        <p className="text-gray-400 text-xs mt-0.5 truncate">{nonprofit.tagline}</p>
+      </div>
+      {selected && (
+        <CheckCircle size={20} style={{ color: nonprofit.brand.primary }} className="shrink-0" />
+      )}
+    </motion.button>
+  );
+}
+
+function CauseSelectionScreen({ onComplete }) {
+  const { setSelectedNonprofit, setTab, setPage } = useApp();
+  const [picked, setPicked] = useState(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const searchResults = NONPROFITS.filter(n =>
+    n.name.toLowerCase().includes(search.toLowerCase()) ||
+    n.category.toLowerCase().includes(search.toLowerCase())
+  );
+
+  function handleConfirm() {
+    if (!picked) return;
+    setSelectedNonprofit(picked);
+    setPage('home');
+  }
+
+  function handleBrowseAll(nonprofit) {
+    setSelectedNonprofit(nonprofit);
+    setPage('home');
+    setTab('nonprofits');
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col h-full bg-white"
+    >
+      {/* Header */}
+      <div className="px-5 pt-14 pb-4"
+        style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)' }}>
+        <div className="flex items-center gap-3 mb-3">
+          <Logo size={32} />
+          <span className="text-white font-bold text-lg">PocketChange</span>
+        </div>
+        <h1 className="text-white text-2xl font-bold leading-tight" style={{ letterSpacing: '-0.3px' }}>
+          Pick your cause
+        </h1>
+        <p className="text-white/60 text-sm mt-1">
+          Your round-ups will go here. You can always change it later.
+        </p>
+      </div>
+
+      <div className="flex-1 scrollable px-4 pt-4 pb-4 space-y-3">
+
+        {!showSearch ? (
+          <>
+            <p className="text-gray-400 text-xs font-semibold uppercase tracking-widest px-1">Featured Causes</p>
+            {FEATURED.map((nonprofit) => (
+              <CauseCard
+                key={nonprofit.id}
+                nonprofit={nonprofit}
+                selected={picked?.id === nonprofit.id}
+                onSelect={setPicked}
+              />
+            ))}
+
+            {/* Browse all option */}
+            <button
+              onClick={() => setShowSearch(true)}
+              className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-dashed border-gray-200 text-left"
+            >
+              <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                <Search size={20} className="text-gray-400" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-700 text-sm">Find a different cause</p>
+                <p className="text-gray-400 text-xs">Search all verified nonprofits</p>
+              </div>
+              <ArrowRight size={16} className="text-gray-300 ml-auto shrink-0" />
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Search mode */}
+            <button onClick={() => setShowSearch(false)} className="text-orange-500 text-sm font-semibold">
+              ← Back to featured
+            </button>
+            <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-3">
+              <Search size={16} className="text-gray-400 shrink-0" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search causes..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
+              />
+            </div>
+            <div className="space-y-2">
+              {searchResults.map(nonprofit => (
+                <motion.button
+                  key={nonprofit.id}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleBrowseAll(nonprofit)}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl bg-gray-50 text-left"
+                >
+                  <OrgLogo nonprofit={nonprofit} size={10} rounded="xl" className="shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm leading-snug">{nonprofit.name}</p>
+                    <p className="text-gray-400 text-xs">{nonprofit.category}</p>
+                  </div>
+                  <ArrowRight size={14} className="text-gray-300 shrink-0" />
+                </motion.button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* CTA */}
+      {!showSearch && (
+        <div className="px-5 pb-10 pt-3 bg-white border-t border-gray-100">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleConfirm}
+            disabled={!picked}
+            className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all"
+            style={{
+              background: picked
+                ? picked.brand.gradient
+                : 'linear-gradient(135deg, #d1d5db, #9ca3af)',
+              opacity: picked ? 1 : 0.6,
+            }}
+          >
+            {picked ? `Support ${picked.name.split(' ')[0]} ${picked.name.split(' ')[1] || ''}` : 'Select a cause to continue'}
+          </motion.button>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// ─── Main onboarding shell ───────────────────────────────────────────────────
+
 export default function Onboarding() {
   const [slide, setSlide] = useState(0);
-  const { setPage } = useApp();
+  const [showCausePicker, setShowCausePicker] = useState(false);
 
   const current = SLIDES[slide];
   const isLast = slide === SLIDES.length - 1;
 
   function advance() {
     if (isLast) {
-      setPage('home');
+      setShowCausePicker(true);
     } else {
       setSlide(s => s + 1);
     }
+  }
+
+  if (showCausePicker) {
+    return <CauseSelectionScreen />;
   }
 
   return (
@@ -188,7 +360,7 @@ export default function Onboarding() {
             </motion.button>
             {slide > 0 && (
               <button
-                onClick={() => setPage('home')}
+                onClick={() => setShowCausePicker(true)}
                 className="text-white/60 text-sm py-2"
               >
                 Skip for now

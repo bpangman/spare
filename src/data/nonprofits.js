@@ -10,6 +10,8 @@ export const NONPROFITS = [
     categoryColor: '#003865',
     logo: '🏀',
     logoUrl: 'https://logo.clearbit.com/bgca.org',
+    logoFallbackUrl: 'https://www.bgca.org/globalassets/logos/bgca-logo.png',
+    logoSvg: 'bgca',  // triggers inline SVG rendering
     raised: 3841209,
     donors: 112340,
     impact: '4.3M youth served at 5,000+ club locations',
