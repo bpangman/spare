@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Share2, Copy, Twitter, Mail, CheckCircle } from 'lucide-react';
+import { Share2, Copy, Mail, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useApp } from '../store/AppContext';
 import { useTheme } from '../store/ThemeContext';
@@ -9,14 +9,24 @@ export default function Share() {
   const { selectedNonprofit, totalDonated } = useApp();
   const brand = useTheme();
   const [copied, setCopied] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
 
-  const shareText = `I've donated $${totalDonated.toFixed(2)} to ${selectedNonprofit.name} through PocketChange — an app that rounds up every purchase and gives the change to charity. Join me! 💙`;
+  if (!selectedNonprofit) return null;
+
+  const shareText = `I've donated $${totalDonated.toFixed(2)} to ${selectedNonprofit.name} through ${brand.appName} — an app that rounds up every purchase and gives the change to charity. Join me! 💙`;
   const shareUrl = 'https://pocketchange.app';
+  const referralCode = 'ALEX-GIVES';
 
   function handleCopy() {
     navigator.clipboard?.writeText(`${shareText}\n${shareUrl}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleCopyCode() {
+    navigator.clipboard?.writeText(referralCode);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
   }
 
   const SHARE_OPTIONS = [
@@ -30,13 +40,13 @@ export default function Share() {
       label: 'Share via...',
       icon: <Share2 size={20} />,
       color: '#6366f1',
-      onPress: () => navigator.share?.({ title: 'PocketChange', text: shareText, url: shareUrl }),
+      onPress: () => navigator.share?.({ title: brand.appName, text: shareText, url: shareUrl }),
     },
     {
       label: 'Email a Friend',
       icon: <Mail size={20} />,
       color: '#10b981',
-      onPress: () => window.open(`mailto:?subject=Join me on PocketChange&body=${encodeURIComponent(shareText + '\n' + shareUrl)}`),
+      onPress: () => window.open(`mailto:?subject=Join me on ${brand.appName}&body=${encodeURIComponent(shareText + '\n' + shareUrl)}`),
     },
   ];
 
@@ -130,15 +140,15 @@ export default function Share() {
         >
           <p className="font-bold text-base mb-1">Refer a Friend</p>
           <p className="text-white/80 text-sm leading-relaxed mb-4">
-            When a friend joins using your link and makes their first round-up, PocketChange donates an extra $1 to your cause on their behalf.
+            When a friend joins using your link and makes their first round-up, {brand.appName} donates an extra $1 to your cause on their behalf.
           </p>
           <div className="bg-white/20 rounded-2xl px-4 py-3 flex items-center justify-between">
-            <span className="font-mono text-white font-bold tracking-wider text-sm">ALEX-GIVES</span>
+            <span className="font-mono text-white font-bold tracking-wider text-sm">{referralCode}</span>
             <button
-              onClick={handleCopy}
+              onClick={handleCopyCode}
               className="bg-white/20 rounded-xl px-3 py-1.5 text-white text-xs font-semibold"
             >
-              {copied ? 'Copied!' : 'Copy code'}
+              {codeCopied ? 'Copied!' : 'Copy code'}
             </button>
           </div>
         </motion.div>

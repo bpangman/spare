@@ -5,24 +5,7 @@ import { CheckCircle, Clock } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 import { useTheme } from '../store/ThemeContext';
 import { TRANSACTIONS, MONTHLY_DATA } from '../data/transactions';
-
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-gray-900 text-white text-xs rounded-xl px-3 py-2 shadow-xl">
-        <p className="font-bold">${payload[0].value.toFixed(2)}</p>
-        <p className="text-gray-400">{label}</p>
-      </div>
-    );
-  }
-  return null;
-};
-
-const QUARTERLY_PAYOUTS = [
-  { quarter: 'Q4 2025', date: 'Jan 1, 2026', amount: 38.41, nonprofit: "Boys & Girls Clubs of America", status: 'sent', emoji: '🏀' },
-  { quarter: 'Q3 2025', date: 'Oct 1, 2025', amount: 29.17, nonprofit: "Boys & Girls Clubs of America", status: 'sent', emoji: '🏀' },
-  { quarter: 'Q1 2026', date: 'Apr 1, 2026', amount: 22.17, nonprofit: "Boys & Girls Clubs of America", status: 'pending', emoji: '🏀' },
-];
+import CustomTooltip from '../components/CustomTooltip';
 
 function groupByDate(transactions) {
   const groups = {};
@@ -35,8 +18,10 @@ function groupByDate(transactions) {
 
 function formatDate(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
-  const today = new Date('2026-03-21');
-  const yesterday = new Date('2026-03-20');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
   if (d.toDateString() === today.toDateString()) return 'Today';
   if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -50,6 +35,15 @@ export default function Activity() {
   const [activeTab, setActiveTab] = useState('Transactions');
   const grouped = groupByDate(TRANSACTIONS);
   const totalRoundUps = TRANSACTIONS.reduce((s, t) => s + t.roundUp, 0);
+
+  if (!selectedNonprofit) return null;
+
+  // Quarterly payouts use the currently selected nonprofit's name and logo
+  const QUARTERLY_PAYOUTS = [
+    { quarter: 'Q4 2025', date: 'Jan 1, 2026', amount: 38.41, nonprofit: selectedNonprofit.name, status: 'sent', emoji: selectedNonprofit.logo },
+    { quarter: 'Q3 2025', date: 'Oct 1, 2025', amount: 29.17, nonprofit: selectedNonprofit.name, status: 'sent', emoji: selectedNonprofit.logo },
+    { quarter: 'Q1 2026', date: 'Apr 1, 2026', amount: pendingRoundUps, nonprofit: selectedNonprofit.name, status: 'pending', emoji: selectedNonprofit.logo },
+  ];
 
   return (
     <div className="flex flex-col h-full bg-gray-50">

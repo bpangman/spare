@@ -21,7 +21,7 @@ body {
 /* Phone frame for demo */
 .phone-frame {
   width: 390px;
-  height: 844px;
+  height: min(844px, calc(100svh - 200px));
   background: #fff;
   border-radius: 50px;
   overflow: hidden;
@@ -39,9 +39,9 @@ body {
 }
 .scrollable::-webkit-scrollbar { display: none; }
 
-/* Gradient text */
+/* Gradient text — follows the active brand color */
 .gradient-text {
-  background: linear-gradient(135deg, #f97316, #fb923c, #fbbf24);
+  background: linear-gradient(135deg, var(--brand-primary, #f97316), var(--brand-secondary, #fbbf24));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -55,9 +55,9 @@ body {
   border-top: 1px solid rgba(0,0,0,0.08);
 }
 
-/* Card shadow */
+/* Card shadow — neutral, no brand-color bleed */
 .card-shadow {
-  box-shadow: 0 4px 24px rgba(249,115,22,0.12), 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
 }
 
 /* Smooth transitions */

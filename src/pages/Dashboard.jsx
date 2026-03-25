@@ -6,6 +6,7 @@ import { useApp } from '../store/AppContext';
 import { useTheme } from '../store/ThemeContext';
 import { TRANSACTIONS, MONTHLY_DATA } from '../data/transactions';
 import OrgLogo from '../components/OrgLogo';
+import CustomTooltip from '../components/CustomTooltip';
 
 const MILESTONES = [
   { amount: 10, label: 'First $10', emoji: '🌱', achieved: true },
@@ -16,22 +17,14 @@ const MILESTONES = [
 ];
 
 function daysUntilQuarterEnd() {
-  const now = new Date('2026-03-21');
-  const qEnd = new Date('2026-03-31');
-  return Math.ceil((qEnd - now) / (1000 * 60 * 60 * 24));
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  // Find end of current quarter
+  const quarterEndMonth = Math.ceil((m + 1) / 3) * 3; // 3, 6, 9, 12
+  const qEnd = new Date(y, quarterEndMonth, 1); // first day of next quarter = last day of this one
+  return Math.max(1, Math.ceil((qEnd - now) / (1000 * 60 * 60 * 24)));
 }
-
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-gray-900 text-white text-xs rounded-xl px-3 py-2 shadow-xl">
-        <p className="font-bold">${payload[0].value.toFixed(2)}</p>
-        <p className="text-gray-400">{label}</p>
-      </div>
-    );
-  }
-  return null;
-};
 
 function MilestoneToast({ milestone, onClose }) {
   return (
@@ -61,6 +54,17 @@ export default function Dashboard() {
   const progressToNext = nextMilestone
     ? Math.min((totalDonated / nextMilestone.amount) * 100, 100)
     : 100;
+
+  // Safe short name for the payout label — avoid splitting mid-word or on punctuation
+  function getShortName(np) {
+    if (!np) return '';
+    const words = np.name.split(' ');
+    // If first word is a short prefix like "St." use first two words
+    if (words[0].endsWith('.') && words.length > 1) return `${words[0]} ${words[1]}`;
+    return words[0];
+  }
+
+  if (!selectedNonprofit) return null;
 
   return (
     <div className="flex flex-col h-full bg-gray-50 relative">
@@ -125,10 +129,48 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
+        {/* Corporate match banner */}
+        {selectedNonprofit.corporateMatch?.active && (() => {
+          const m = selectedNonprofit.corporateMatch;
+          const pct = Math.round((m.matched / m.maxAmount) * 100);
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12 }}
+              className="rounded-3xl p-4 card-shadow"
+              style={{ background: '#fffbeb', border: '1.5px solid #fde68a' }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🏢</span>
+                  <div>
+                    <p className="font-bold text-amber-900 text-sm">{m.company} Match Active</p>
+                    <p className="text-amber-700 text-xs">Every dollar you donate is matched</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-amber-900 text-sm">${(m.matched / 1000).toFixed(1)}K</p>
+                  <p className="text-amber-600 text-xs">of ${(m.maxAmount / 1000).toFixed(0)}K used</p>
+                </div>
+              </div>
+              <div className="h-2 bg-amber-100 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 1, delay: 0.4 }}
+                  className="h-full bg-amber-400 rounded-full"
+                />
+              </div>
+              <p className="text-amber-700 text-xs mt-1.5">{pct}% of match pool used · ${((m.maxAmount - m.matched) / 1000).toFixed(1)}K remaining</p>
+            </motion.div>
+          );
+        })()}
+
         {/* Stats row */}
         <div className="flex gap-3">
           {[
-            { icon: <Zap size={18} />, label: 'Pending', value: `$${pendingRoundUps}`, sub: 'This month', color: brand.primary },
+            { icon: <Zap size={18} />, label: 'Pending', value: `$${pendingRoundUps.toFixed(2)}`, sub: 'This month', color: brand.primary },
             { icon: <TrendingUp size={18} />, label: 'Avg/mo', value: '$10.10', sub: '+12% vs last', color: '#10b981' },
             { icon: <Heart size={18} />, label: 'Round-ups', value: '247', sub: 'All time', color: brand.secondary },
           ].map((s, i) => (
@@ -154,7 +196,7 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="font-bold text-gray-900 text-sm">Q1 Payout to {selectedNonprofit.name.split(' ')[0]}</p>
+              <p className="font-bold text-gray-900 text-sm">Q1 Payout to {getShortName(selectedNonprofit)}</p>
               <p className="text-gray-400 text-xs mt-0.5">Funds sent on April 1, 2026</p>
             </div>
             <div className="text-right">
@@ -173,7 +215,7 @@ export default function Dashboard() {
           </div>
           <div className="flex justify-between mt-1.5">
             <p className="text-gray-400 text-xs">Jan 1</p>
-            <p className="text-xs font-semibold" style={{ color: brand.primary }}>${pendingRoundUps} ready to send</p>
+            <p className="text-xs font-semibold" style={{ color: brand.primary }}>${pendingRoundUps.toFixed(2)} ready to send</p>
             <p className="text-gray-400 text-xs">Apr 1</p>
           </div>
         </motion.div>

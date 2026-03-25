@@ -5,8 +5,19 @@ import { useApp } from '../store/AppContext';
 import { useTheme } from '../store/ThemeContext';
 import { NONPROFITS, CATEGORIES } from '../data/nonprofits';
 import OrgLogo from '../components/OrgLogo';
+import MatchBadge from '../components/MatchBadge';
+
+// The featured "Cause of the Month" — pulled from data, not hardcoded
+const CAUSE_OF_MONTH = NONPROFITS.find(n => n.id === 'bgca');
 
 function NonprofitDetail({ nonprofit, onClose, onSelect, isSelected }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  function handleSelect() {
+    onSelect(nonprofit);
+    onClose();
+  }
+
   return (
     <motion.div
       initial={{ y: '100%' }}
@@ -64,6 +75,8 @@ function NonprofitDetail({ nonprofit, onClose, onSelect, isSelected }) {
           <p className="font-semibold text-sm" style={{ color: nonprofit.brand.primary }}>{nonprofit.impact}</p>
         </div>
 
+        <MatchBadge match={nonprofit.corporateMatch} />
+
         {/* Brand preview */}
         <div className="mt-4 rounded-2xl p-4 text-white" style={{ background: nonprofit.brand.gradient }}>
           <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">App branding if selected</p>
@@ -78,10 +91,38 @@ function NonprofitDetail({ nonprofit, onClose, onSelect, isSelected }) {
             <CheckCircle size={20} style={{ color: nonprofit.brand.primary }} />
             <span className="font-bold" style={{ color: nonprofit.brand.primary }}>Currently Supporting</span>
           </div>
+        ) : showConfirm ? (
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <p className="text-center text-sm text-gray-600 font-medium">
+                Switch your cause to <span className="font-bold text-gray-900">{nonprofit.name}</span>?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowConfirm(false)}
+                  className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-500 font-semibold text-sm"
+                >
+                  Cancel
+                </button>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleSelect}
+                  className="flex-1 py-3 rounded-2xl text-white font-bold text-sm shadow-lg"
+                  style={{ background: nonprofit.brand.gradient }}
+                >
+                  Yes, Switch
+                </motion.button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         ) : (
           <motion.button
             whileTap={{ scale: 0.97 }}
-            onClick={() => { onSelect(nonprofit); onClose(); }}
+            onClick={() => setShowConfirm(true)}
             className="w-full py-4 rounded-2xl text-white font-bold text-base shadow-lg"
             style={{ background: nonprofit.brand.gradient }}
           >
@@ -93,7 +134,7 @@ function NonprofitDetail({ nonprofit, onClose, onSelect, isSelected }) {
   );
 }
 
-function NonprofitCard({ nonprofit, onPress, isSelected, brand }) {
+function NonprofitCard({ nonprofit, onPress, isSelected }) {
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
@@ -114,8 +155,10 @@ function NonprofitCard({ nonprofit, onPress, isSelected, brand }) {
             </span>
           )}
         </div>
-        <p className="text-gray-400 text-xs mt-0.5 truncate">{nonprofit.tagline}</p>
-        <div className="flex items-center gap-3 mt-1.5">
+        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+          <MatchBadge match={nonprofit.corporateMatch} compact />
+        </div>
+        <div className="flex items-center gap-3 mt-1">
           <div className="flex items-center gap-1">
             <Star size={10} className="text-amber-400 fill-amber-400" />
             <span className="text-gray-500 text-xs font-medium">{nonprofit.rating}</span>
@@ -147,6 +190,8 @@ export default function Nonprofits() {
     return matchCat && matchSearch;
   });
 
+  if (!selectedNonprofit) return null;
+
   return (
     <div className="flex flex-col h-full bg-gray-50 relative">
       {/* Header */}
@@ -173,21 +218,21 @@ export default function Nonprofits() {
         </div>
       </motion.div>
 
-      {/* Featured cause of the month */}
-      {!search && activeCategory === 'all' && (
+      {/* Featured cause of the month — pulled from data */}
+      {!search && activeCategory === 'all' && CAUSE_OF_MONTH && (
         <div className="bg-white px-5 pt-3 pb-1">
           <p className="text-gray-400 text-xs font-semibold uppercase tracking-widest mb-2">⭐ Cause of the Month</p>
           <motion.div
             whileTap={{ scale: 0.98 }}
-            onClick={() => setDetail(NONPROFITS.find(n => n.id === 'bgca'))}
+            onClick={() => setDetail(CAUSE_OF_MONTH)}
             className="rounded-3xl overflow-hidden mb-3 cursor-pointer"
-            style={{ background: 'linear-gradient(135deg, #003865, #001a33)' }}
+            style={{ background: CAUSE_OF_MONTH.brand.gradient }}
           >
             <div className="p-4 flex items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-3xl shrink-0">🏀</div>
+              <OrgLogo nonprofit={CAUSE_OF_MONTH} size={14} rounded="2xl" className="shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-white font-bold text-sm leading-snug">Boys & Girls Clubs of America</p>
-                <p className="text-white/70 text-xs mt-0.5">4.3M youth served annually</p>
+                <p className="text-white font-bold text-sm leading-snug">{CAUSE_OF_MONTH.name}</p>
+                <p className="text-white/70 text-xs mt-0.5">{CAUSE_OF_MONTH.impact}</p>
                 <div className="mt-1.5 flex items-center gap-1.5">
                   <div className="h-1.5 flex-1 rounded-full bg-white/20 overflow-hidden">
                     <div className="h-full rounded-full bg-white" style={{ width: '73%' }} />
@@ -202,7 +247,7 @@ export default function Nonprofits() {
             <div className="bg-white/10 px-4 py-2.5 flex gap-4">
               {[
                 { label: 'This month', value: '$47,291 raised' },
-                { label: 'Supporters', value: '1,204 donors' },
+                { label: 'Supporters', value: `${(CAUSE_OF_MONTH.donors / 1000).toFixed(0)}K donors` },
               ].map(s => (
                 <div key={s.label}>
                   <p className="text-white/50 text-xs">{s.label}</p>
@@ -254,7 +299,6 @@ export default function Nonprofits() {
                 nonprofit={n}
                 onPress={setDetail}
                 isSelected={selectedNonprofit.id === n.id}
-                brand={brand}
               />
             </motion.div>
           ))

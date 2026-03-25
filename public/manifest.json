@@ -2,7 +2,7 @@
   "name": "PocketChange",
   "short_name": "PocketChange",
   "description": "Round up every purchase and donate the spare change to the cause you love.",
-  "start_url": "/",
+  "start_url": "/pocketchange/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f172a",

@@ -10,8 +10,6 @@ export const NONPROFITS = [
     categoryColor: '#003865',
     logo: '🏀',
     logoUrl: 'https://logo.clearbit.com/bgca.org',
-    logoFallbackUrl: 'https://www.bgca.org/globalassets/logos/bgca-logo.png',
-    logoSvg: 'bgca',  // triggers inline SVG rendering
     raised: 3841209,
     donors: 112340,
     impact: '4.3M youth served at 5,000+ club locations',
@@ -19,8 +17,16 @@ export const NONPROFITS = [
     ein: '13-5562976',
     rating: 4.8,
     featured: true,
+    corporateMatch: {
+      company: 'General Motors',
+      companyShort: 'GM',
+      maxAmount: 50000,
+      matched: 23400,
+      active: true,
+      description: 'GM is matching every dollar donated to BGCA, up to $50,000 total.',
+    },
     brand: {
-      appName: 'BGCA Give',
+      appName: 'BGCA Round-Up',
       tagline: 'Supporting youth, every purchase',
       primary: '#003865',       // BGCA navy
       secondary: '#E8192C',     // BGCA red
@@ -47,7 +53,7 @@ export const NONPROFITS = [
     rating: 4.8,
     featured: true,
     brand: {
-      appName: 'WWF Give',
+      appName: 'WWF Round-Up',
       tagline: 'Protect nature, every purchase',
       primary: '#006f51',
       secondary: '#10b981',
@@ -101,7 +107,7 @@ export const NONPROFITS = [
     rating: 4.7,
     featured: false,
     brand: {
-      appName: 'Feeding America Give',
+      appName: 'Feeding America Round-Up',
       tagline: 'End hunger, every purchase',
       primary: '#b45309',
       secondary: '#f59e0b',
@@ -128,7 +134,7 @@ export const NONPROFITS = [
     rating: 4.7,
     featured: false,
     brand: {
-      appName: 'Habitat Give',
+      appName: 'Habitat Round-Up',
       tagline: 'Build homes, every purchase',
       primary: '#5b21b6',
       secondary: '#8b5cf6',
@@ -155,7 +161,7 @@ export const NONPROFITS = [
     rating: 4.9,
     featured: true,
     brand: {
-      appName: 'Khan Academy Give',
+      appName: 'Khan Academy Round-Up',
       tagline: 'Fund education, every purchase',
       primary: '#0369a1',
       secondary: '#0ea5e9',
@@ -182,7 +188,7 @@ export const NONPROFITS = [
     rating: 4.5,
     featured: false,
     brand: {
-      appName: 'Red Cross Give',
+      appName: 'Red Cross Round-Up',
       tagline: 'Respond to disasters, every purchase',
       primary: '#991b1b',
       secondary: '#dc2626',
@@ -209,7 +215,7 @@ export const NONPROFITS = [
     rating: 4.9,
     featured: false,
     brand: {
-      appName: 'MSF Give',
+      appName: 'MSF Round-Up',
       tagline: 'Fund medical aid, every purchase',
       primary: '#4338ca',
       secondary: '#6366f1',
@@ -236,7 +242,7 @@ export const NONPROFITS = [
     rating: 4.6,
     featured: false,
     brand: {
-      appName: 'ACLU Give',
+      appName: 'ACLU Round-Up',
       tagline: 'Defend rights, every purchase',
       primary: '#b91c1c',
       secondary: '#ef4444',

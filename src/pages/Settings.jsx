@@ -23,8 +23,8 @@ function Toggle({ value, onChange, color }) {
 }
 
 function SettingRow({ icon, label, sub, right, onPress, color }) {
-  return (
-    <button onClick={onPress} className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
+  const inner = (
+    <>
       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '18' }}>
         <span style={{ color }}>{icon}</span>
       </div>
@@ -33,7 +33,19 @@ function SettingRow({ icon, label, sub, right, onPress, color }) {
         {sub && <p className="text-gray-400 text-xs mt-0.5">{sub}</p>}
       </div>
       {right}
-    </button>
+    </>
+  );
+  if (onPress) {
+    return (
+      <button onClick={onPress} className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
+        {inner}
+      </button>
+    );
+  }
+  return (
+    <div className="w-full flex items-center gap-3 px-4 py-3.5">
+      {inner}
+    </div>
   );
 }
 
@@ -87,10 +99,20 @@ function AddCardSheet({ show, onClose, onAdd, brand }) {
     return digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
   }
 
+  function detectCardBrand(num) {
+    const n = num.replace(/\s/g, '');
+    if (n.startsWith('4')) return 'Visa';
+    if (n.startsWith('5')) return 'Mastercard';
+    if (n.startsWith('3')) return 'Amex';
+    if (n.startsWith('6')) return 'Discover';
+    return 'Card';
+  }
+
   function handleAdd() {
     if (cardNumber.replace(/\s/g, '').length < 16) return;
     const last4 = cardNumber.replace(/\s/g, '').slice(-4);
-    onAdd({ id: Date.now(), last4, brand: 'Visa', name: name || 'My Card' });
+    const detectedBrand = detectCardBrand(cardNumber);
+    onAdd({ id: Date.now(), last4, brand: detectedBrand, name: name || 'My Card' });
     onClose();
     setCardNumber(''); setExpiry(''); setCvv(''); setName('');
   }
@@ -124,7 +146,7 @@ function AddCardSheet({ show, onClose, onAdd, brand }) {
           <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-white/10 -translate-y-1/2 translate-x-1/2" />
           <div className="relative z-10 h-full flex flex-col justify-between">
             <div className="flex justify-between items-start">
-              <span className="text-white/70 text-xs font-semibold uppercase tracking-widest">PocketChange</span>
+              <span className="text-white/70 text-xs font-semibold uppercase tracking-widest">{brand.appName}</span>
               <CreditCard size={20} className="text-white/60" />
             </div>
             <div>
@@ -336,7 +358,7 @@ function PrivacySheet({ show, onClose, brand }) {
 }
 
 export default function Settings() {
-  const { linkedCards, setLinkedCards, selectedNonprofit, roundUpMultiplier, setRoundUpMultiplier, setTab } = useApp();
+  const { linkedCards, setLinkedCards, selectedNonprofit, roundUpMultiplier, setRoundUpMultiplier, setTab, totalDonated } = useApp();
   const brand = useTheme();
   const [notifications, setNotifications] = useState(true);
   const [autoDeposit, setAutoDeposit] = useState(true);
@@ -374,7 +396,7 @@ export default function Settings() {
           </div>
           <div className="text-right">
             <p className="text-gray-400 text-xs">Donated</p>
-            <p className="text-gray-900 font-bold text-lg">$60.58</p>
+            <p className="text-gray-900 font-bold text-lg">${totalDonated.toFixed(2)}</p>
           </div>
         </motion.div>
 
@@ -478,7 +500,7 @@ export default function Settings() {
             </div>
           ) : <Logo size={32} />}
           <p className="font-bold text-sm" style={{ color: brand.primary }}>{brand.appName}</p>
-          <p className="text-gray-300 text-xs">Powered by PocketChange · v1.0.0</p>
+          <p className="text-gray-300 text-xs">PocketChange · v1.0.0</p>
         </motion.div>
 
       </div>
