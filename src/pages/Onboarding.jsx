@@ -959,6 +959,9 @@ function CauseSelectionScreen({ onComplete }) {
             >
               {picked ? `Support ${picked.name}` : 'Select a cause to continue'}
             </motion.button>
+            <p className="text-center text-gray-400 text-xs leading-relaxed px-2 mt-3">
+              Donations are made to <span className="font-semibold">Endaoment</span>, a registered 501(c)(3) donor-advised fund, which grants funds to your chosen nonprofit quarterly. Once donated, funds cannot be reversed. Tax receipts are issued by Endaoment, not directly by your chosen charity. You can change your cause anytime for future donations.
+            </p>
           </div>
         )}
       </div>
