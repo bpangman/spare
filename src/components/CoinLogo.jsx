@@ -13,7 +13,7 @@ export default function CoinLogo({ size = 180, animate = true, showName = true, 
   return (
     <div
       className={`inline-flex flex-col items-center select-none ${className}`}
-      style={{ gap: showName ? Math.round(size * 0.02) : 0 }}
+      style={{ gap: showName ? Math.round(size * 0.08) : 0 }}
     >
       <img
         src={logo}

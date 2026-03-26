@@ -22,7 +22,7 @@ const SLIDES = [
     bg: 'from-blue-600 to-cyan-500',
     illustration: (
       <div className="relative flex items-center justify-center">
-        <CoinLogo size={260} animate showName />
+        <CoinLogo size={200} animate showName />
       </div>
     ),
     title: '',
@@ -1036,7 +1036,7 @@ export default function Onboarding() {
               whileTap={{ scale: 0.97 }}
               onClick={advance}
               className="w-full py-4 rounded-2xl bg-white font-bold text-base shadow-lg"
-              style={{ color: slide === 0 ? '#f97316' : slide === 1 ? '#7c3aed' : slide === 2 ? '#059669' : '#e11d48' }}
+              style={{ color: slide === 0 ? '#2563eb' : slide === 1 ? '#7c3aed' : slide === 2 ? '#059669' : '#e11d48' }}
             >
               {current.cta}
             </motion.button>
