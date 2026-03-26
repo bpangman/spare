@@ -1001,7 +1001,7 @@ export default function Onboarding() {
           className={`flex-1 bg-gradient-to-br ${current.bg} flex flex-col items-center justify-center px-8 pt-8 pb-6`}
         >
           {/* Illustration */}
-          <div className="h-80 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center min-h-0">
             {current.illustration}
           </div>
 
