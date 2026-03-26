@@ -511,7 +511,7 @@ const PAYMENT_OPTIONS = [
     id: 'ach',
     icon: '🏦',
     label: 'Bank Account',
-    sub: 'Direct bank transfer · 5% platform fee',
+    sub: 'Direct bank transfer · 5% deducted from donation',
     badge: 'Best for most people',
     badgeColor: '#059669',
   },
@@ -519,14 +519,14 @@ const PAYMENT_OPTIONS = [
     id: 'apple_pay',
     icon: '🍎',
     label: 'Apple Pay',
-    sub: 'Set up once, fully automatic · 10% platform fee',
+    sub: 'Set up once, fully automatic · 10% deducted from donation',
     badge: null,
   },
   {
     id: 'card',
     icon: '💳',
     label: 'Credit or Debit Card',
-    sub: 'Visa, Mastercard, Amex, or Discover · 10% platform fee',
+    sub: 'Visa, Mastercard, Amex, or Discover · 10% deducted from donation',
     badge: null,
   },
 ];
@@ -569,7 +569,7 @@ function PaymentMethodScreen({ onNext }) {
           </motion.div>
         </motion.div>
         <h1 className="text-white font-bold text-4xl leading-tight text-center" style={{ letterSpacing: '-0.5px' }}>
-          How should we{'\n'}collect your round-ups?
+          How should we collect{'\n'}your round-up payments?
         </h1>
         <p className="text-white/80 text-sm mt-2 text-center leading-relaxed">
           Once a month, we'll add up your round-ups and charge your chosen payment method.
@@ -637,8 +637,7 @@ function PaymentMethodScreen({ onNext }) {
             {selected === 'card' ? 'Continue — Add Card →' : selected ? 'Continue — Pick Your Cause →' : 'Choose a payment method'}
           </motion.button>
           <p className="text-center text-gray-400 text-xs leading-relaxed px-2 mt-3">
-            PocketChange retains a <span className="font-semibold">5% fee</span> (ACH) or <span className="font-semibold">10% fee</span> (Apple Pay &amp; card). The remainder goes directly to your cause via{' '}
-            <span className="font-semibold">Endaoment</span>, a registered 501(c)(3) donor-advised fund. Tax receipts issued automatically.
+            A small fee is deducted from your round-up total — <span className="font-semibold">5%</span> for ACH or <span className="font-semibold">10%</span> for Apple Pay &amp; card. You are never charged extra. The remainder goes directly to your cause via <span className="font-semibold">Endaoment</span>, a registered 501(c)(3) donor-advised fund. Tax receipts issued automatically.
           </p>
         </div>
       </div>
@@ -751,7 +750,7 @@ function CardEntryScreen({ onNext }) {
             Add your card
           </h1>
           <p className="text-white/80 text-sm mt-2 text-center leading-relaxed">
-            Saved securely via Stripe. A 10% platform fee applies to card payments.
+            Saved securely via Stripe. A 10% fee is deducted from your donation — you are never charged extra.
           </p>
         </div>
 
