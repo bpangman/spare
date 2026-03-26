@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/spare/v2/',
+  base: '/cacheable/',
   server: {
     allowedHosts: 'all',
   },
