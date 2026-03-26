@@ -30,10 +30,12 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Structure Pages output (v2 + retired root)
+      - name: Structure Pages output (v2 + dashboard + retired root)
         run: |
           mkdir -p dist-pages/v2
           cp -r dist/* dist-pages/v2/
+          mkdir -p dist-pages/dashboard
+          cp dashboard/index.html dist-pages/dashboard/index.html
           cat > dist-pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="en">
