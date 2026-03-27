@@ -45,14 +45,6 @@ export default function CoinLogo({ size = 180, animate = true, showName = true, 
           >
             Cache
           </text>
-          {/* Diagonal cents-symbol line through the C */}
-          <line
-            x1="18" y1="40"
-            x2="32" y2="4"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
         </svg>
       )}
     </div>
