@@ -1,7 +1,7 @@
 {
-  "name": "cacheable-backend",
+  "name": "cache-backend",
   "version": "1.0.0",
-  "description": "Cacheable backend — Plaid monitoring, Stripe payments, Stripe Treasury, Endaoment disbursement",
+  "description": "Cache backend — Plaid monitoring, Stripe payments, Stripe Treasury, Endaoment disbursement",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

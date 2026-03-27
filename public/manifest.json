@@ -1,8 +1,8 @@
 {
-  "name": "Cacheable",
-  "short_name": "Cacheable",
+  "name": "Cache",
+  "short_name": "Cache",
   "description": "Round up every purchase and donate the spare change to the cause you love.",
-  "start_url": "/cacheable/",
+  "start_url": "/cache/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f172a",

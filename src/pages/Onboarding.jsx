@@ -479,7 +479,7 @@ function ConnectCardScreen({ onNext }) {
 
           <div className="flex items-center gap-2 px-1 pt-1">
             <Lock size={12} className="text-gray-400 shrink-0" />
-            <p className="text-gray-400 text-xs">Read-only access via Plaid · Your credentials are never stored by Cacheable</p>
+            <p className="text-gray-400 text-xs">Read-only access via Plaid · Your credentials are never stored by Cache</p>
           </div>
         </div>
 
@@ -700,7 +700,7 @@ function CardEntryForm({ onSuccess }) {
       <div className="flex items-center gap-2 px-1">
         <Lock size={13} className="text-gray-400 shrink-0" />
         <p className="text-gray-400 text-xs">
-          Card details secured by <span className="font-semibold">Stripe</span>. Cacheable never sees your card number.
+          Card details secured by <span className="font-semibold">Stripe</span>. Cache never sees your card number.
         </p>
       </div>
 

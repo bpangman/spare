@@ -268,7 +268,7 @@ function PrivacySheet({ show, onClose, brand }) {
             label="Privacy Policy"
             sub="Read our full data practices"
             color="#6b7280"
-            onPress={() => window.open('/cacheable/legal/privacy/', '_blank')}
+            onPress={() => window.open('/cache/legal/privacy/', '_blank')}
             right={<ExternalLink size={14} className="text-gray-300 shrink-0" />}
           />
           <div className="h-px bg-gray-100 mx-4" />
@@ -277,7 +277,7 @@ function PrivacySheet({ show, onClose, brand }) {
             label="Terms of Service"
             sub="Review your user agreement"
             color="#6b7280"
-            onPress={() => window.open('/cacheable/legal/terms/', '_blank')}
+            onPress={() => window.open('/cache/legal/terms/', '_blank')}
             right={<ExternalLink size={14} className="text-gray-300 shrink-0" />}
           />
         </div>
@@ -496,7 +496,7 @@ export default function Settings() {
             </div>
           ) : <CoinLogo size={32} animate={false} showName={false} />}
           <p className="font-bold text-sm" style={{ color: brand.primary }}>{brand.appName}</p>
-          <p className="text-gray-300 text-xs">Cacheable · v1.0.0</p>
+          <p className="text-gray-300 text-xs">Cache · v1.0.0</p>
         </motion.div>
 
       </div>
