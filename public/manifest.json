@@ -1,8 +1,8 @@
 {
-  "name": "Cache",
-  "short_name": "Cache",
+  "name": "PocketCache",
+  "short_name": "PocketCache",
   "description": "Round up every purchase and donate the spare change to the cause you love.",
-  "start_url": "/cache/",
+  "start_url": "/pocketcache/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f172a",

@@ -573,7 +573,7 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <p className="text-center text-gray-300 text-xs pt-4">Cache · v1.0.0</p>
+          <p className="text-center text-gray-300 text-xs pt-4">PocketCache · v1.0.0</p>
         </div>
       </Sheet>
     </div>
