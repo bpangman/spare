@@ -33,12 +33,28 @@ jobs:
       - name: Structure Pages output
         run: |
           mkdir -p dist-pages
-          cp -r dist/* dist-pages/
+
+          # Landing page at root
+          cp landing/index.html dist-pages/index.html
+
+          # React prototype app at /demo/
+          mkdir -p dist-pages/demo
+          cp -r dist/* dist-pages/demo/
+
+          # Dashboard
           mkdir -p dist-pages/dashboard
           cp dashboard/index.html dist-pages/dashboard/index.html
+
+          # Legal pages
           mkdir -p dist-pages/legal/privacy dist-pages/legal/terms
           cp legal/privacy/index.html dist-pages/legal/privacy/index.html
           cp legal/terms/index.html dist-pages/legal/terms/index.html
+
+          # Static assets for landing page
+          cp public/logo.png dist-pages/logo.png
+
+          # CNAME for custom domain
+          cp CNAME dist-pages/CNAME
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
