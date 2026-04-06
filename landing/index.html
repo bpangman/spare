@@ -596,8 +596,9 @@
   }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-  // Waitlist form — POST to Cortana Dashboard relay → Google Sheets
-  // Cortana Dashboard runs locally; tunnel URL is updated by tunnel.sh on each restart.
+  // Waitlist form — dual capture: Apps Script web app (stable) + Cortana relay (tunnel fallback)
+  // Apps Script URL never changes; tunnel URL is updated by tunnel.sh on each restart.
+  const APPS_SCRIPT_API = 'https://script.google.com/macros/s/AKfycbw2xVEu7uWaTS0B41DBNDYU_4myWIwjbV_7PvcJsUtCTpGbWaH8NQrFpere4U6PR6Bh/exec';
   const WAITLIST_API = 'https://significance-introductory-universities-intervals.trycloudflare.com/api/waitlist';
 
   document.getElementById('waitlist-form').addEventListener('submit', async function(e) {
@@ -608,30 +609,39 @@
     btn.textContent = 'Joining…';
     btn.disabled = true;
 
-    // Always send ntfy notification (primary capture — works even if relay is unreachable)
+    // Always send ntfy notification (capture even if all APIs are down)
     fetch('https://ntfy.sh/pocketcache-waitlist', {
       method: 'POST',
       body: 'New PocketCache waitlist signup: ' + email,
       headers: { 'Title': 'PocketCache Waitlist' }
     }).catch(() => {});
 
+    // Try Apps Script (stable, no tunnel dependency) first, then fall back to relay
+    let saved = false;
     try {
-      const res = await fetch(WAITLIST_API, {
+      const res = await fetch(APPS_SCRIPT_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
       const data = await res.json();
-      // Store locally as backup regardless
-      const list = JSON.parse(localStorage.getItem('pc-waitlist') || '[]');
-      list.push({ email, ts: new Date().toISOString() });
-      localStorage.setItem('pc-waitlist', JSON.stringify(list));
-    } catch (err) {
-      // ntfy already fired — store locally as additional backup
-      const list = JSON.parse(localStorage.getItem('pc-waitlist') || '[]');
-      list.push({ email, ts: new Date().toISOString(), fallback: true });
-      localStorage.setItem('pc-waitlist', JSON.stringify(list));
+      if (data && data.success) saved = true;
+    } catch (_) {}
+
+    if (!saved) {
+      try {
+        await fetch(WAITLIST_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+      } catch (_) {}
     }
+
+    // Store locally as additional backup regardless
+    const list = JSON.parse(localStorage.getItem('pc-waitlist') || '[]');
+    list.push({ email, ts: new Date().toISOString() });
+    localStorage.setItem('pc-waitlist', JSON.stringify(list));
 
     // Show success regardless — never block UX on network
     this.style.display = 'none';
