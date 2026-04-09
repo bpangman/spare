@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback } from 'react';
 import { NONPROFITS } from '../data/nonprofits';
 
 function load(key, fallback) {
@@ -15,6 +15,20 @@ function save(key, value) {
 }
 
 const AppContext = createContext(null);
+
+/**
+ * Calculate the platform service fee for a given amount and payment method.
+ * Fee is charged separately — 100% of the round-up amount goes to charity.
+ *
+ * @param {number} amount - round-up total in dollars
+ * @param {'card'|'ach'|'apple_pay'} method - payment method
+ * @returns {number} service fee in dollars
+ */
+export function calculateFee(amount, method = 'card') {
+  const rate = method === 'ach' ? 0.05 : 0.10;
+  const raw = amount * rate;
+  return Math.min(5, Math.max(2, parseFloat(raw.toFixed(2))));
+}
 
 const BASE_PENDING = 4.63;
 
@@ -79,6 +93,7 @@ export function AppProvider({ children }) {
       totalDonated,
       boostDonation,
       pendingRoundUps,
+      calculateFee,
     }}>
       {children}
     </AppContext.Provider>

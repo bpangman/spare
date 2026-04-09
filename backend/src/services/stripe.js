@@ -5,7 +5,7 @@
  *  1. Create/retrieve Stripe Customers for users
  *  2. Create SetupIntents for saving card details via Stripe Elements (frontend)
  *  3. Create Financial Connections sessions for linking bank accounts (ACH)
- *  4. Charge users monthly via their stored payment method
+ *  4. Charge users monthly via their stored payment method (TWO charges: donation + service fee)
  *  5. Handle failed payments: retry logic, pause account on second failure
  *  6. Process Stripe webhooks to confirm payment outcomes
  */
@@ -17,12 +17,28 @@ dotenv.config();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// ── Fee rates ────────────────────────────────────────────────────────────────
-const FEE_RATES = {
-  ach:       0.05,   // 5%
-  apple_pay: 0.10,   // 10%
-  card:      0.10,   // 10%
+// ── Fee config ───────────────────────────────────────────────────────────────
+// The service fee is charged as a SEPARATE PaymentIntent — 100% of round-ups
+// go to the user's chosen charity. The fee is PocketCache's platform revenue.
+const FEE_CONFIG = {
+  ach:       { rate: 0.05, min: 2.00, max: 5.00 },   // 5%, $2–$5
+  apple_pay: { rate: 0.10, min: 2.00, max: 5.00 },   // 10%, $2–$5
+  card:      { rate: 0.10, min: 2.00, max: 5.00 },   // 10%, $2–$5
 };
+
+/**
+ * Calculate the platform service fee for a given gross amount and payment method.
+ * Fee is separate from the donation — the full gross amount goes to charity.
+ *
+ * @param {number} grossAmount - donation amount in dollars
+ * @param {string} paymentMethod - 'ach' | 'apple_pay' | 'card'
+ * @returns {number} fee in dollars (floored to 2 decimal places)
+ */
+export function calculatePlatformFee(grossAmount, paymentMethod = 'card') {
+  const config = FEE_CONFIG[paymentMethod] ?? FEE_CONFIG.card;
+  const raw = grossAmount * config.rate;
+  return Math.min(config.max, Math.max(config.min, parseFloat(raw.toFixed(2))));
+}
 
 /**
  * Create or retrieve a Stripe Customer for a user.
@@ -32,7 +48,7 @@ export async function getOrCreateCustomer(userId, email, name) {
   const customer = await stripe.customers.create({
     email,
     name,
-    metadata: { spare_user_id: userId },
+    metadata: { pocketcache_user_id: userId },
   });
   return customer.id;
 }
@@ -78,41 +94,55 @@ export async function attachPaymentMethod(paymentMethodId, stripeCustomerId) {
 }
 
 /**
- * Monthly charge: collect the user's accumulated round-ups.
- * Deducts the platform fee before the net amount moves to Stripe Treasury.
+ * Monthly charge: two separate PaymentIntents.
  *
  * Flow:
- *   1. Charge user's stored payment method for gross_amount
- *   2. Stripe deposits gross_amount into our platform account
- *   3. Platform fee stays in platform account (our revenue)
- *   4. Net amount gets transferred to Treasury financial account (see treasury.js)
+ *   1. Charge #1 — full gross_amount → 100% goes to charity via Endaoment
+ *   2. Charge #2 — platform service fee (separate charge, PocketCache revenue)
+ *
+ * The fee is NEVER deducted from the donation. The user is billed separately.
  */
 export async function chargeUser(stripeCustomerId, paymentMethodId, grossAmount, paymentMethod, chargeId) {
-  const feeRate = FEE_RATES[paymentMethod] ?? 0.10;
-  const platformFee = Math.round(grossAmount * feeRate * 100); // in cents
+  const platformFee = calculatePlatformFee(grossAmount, paymentMethod);
   const grossCents = Math.round(grossAmount * 100);
+  const feeCents = Math.round(platformFee * 100);
 
-  const paymentIntent = await stripe.paymentIntents.create({
+  // Charge 1: full donation amount — goes entirely to charity
+  const donationIntent = await stripe.paymentIntents.create({
     amount: grossCents,
     currency: 'usd',
     customer: stripeCustomerId,
     payment_method: paymentMethodId,
     off_session: true,
     confirm: true,
-    // application_fee_amount: platformFee,  // uncomment if using Stripe Connect
     metadata: {
-      spare_charge_id: chargeId,
-      platform_fee_cents: platformFee,
-      net_cents: grossCents - platformFee,
+      pocketcache_charge_id: chargeId,
+      charge_type: 'donation',
     },
-    description: `Spare monthly round-up donation`,
+    description: `PocketCache monthly round-up donation`,
+  });
+
+  // Charge 2: platform service fee — separate charge, PocketCache revenue
+  const feeIntent = await stripe.paymentIntents.create({
+    amount: feeCents,
+    currency: 'usd',
+    customer: stripeCustomerId,
+    payment_method: paymentMethodId,
+    off_session: true,
+    confirm: true,
+    metadata: {
+      pocketcache_charge_id: chargeId,
+      charge_type: 'service_fee',
+    },
+    description: `PocketCache monthly service fee`,
   });
 
   return {
-    paymentIntentId: paymentIntent.id,
-    status: paymentIntent.status,
-    platformFeeCents: platformFee,
-    netCents: grossCents - platformFee,
+    paymentIntentId: donationIntent.id,
+    feePaymentIntentId: feeIntent.id,
+    status: donationIntent.status,
+    platformFeeCents: feeCents,
+    netCents: grossCents,  // full amount goes to charity
   };
 }
 

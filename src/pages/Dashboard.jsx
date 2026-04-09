@@ -354,9 +354,10 @@ export default function Dashboard() {
         {/* Stats row */}
         <div className="flex gap-3">
           {[
-            { icon: <Zap size={18} />, label: 'Pending', value: `$${pendingRoundUps.toFixed(2)}`, sub: 'This month', color: brand.primary },
-            { icon: <TrendingUp size={18} />, label: 'Avg/mo', value: '$10.10', sub: '+12% vs last', color: '#10b981' },
-            { icon: <Heart size={18} />, label: 'Round-ups', value: '247', sub: 'All time', color: brand.secondary },
+            { icon: <Zap size={18} />, label: 'Pending', value: `$${pendingRoundUps.toFixed(2)}`, sub: 'This month', color: brand.primary,
+              note: `~$${Math.min(5, Math.max(2, parseFloat((pendingRoundUps * 0.10).toFixed(2)))).toFixed(2)} service fee` },
+            { icon: <TrendingUp size={18} />, label: 'Avg/mo', value: '$10.10', sub: '+12% vs last', color: '#10b981', note: null },
+            { icon: <Heart size={18} />, label: 'Round-ups', value: '247', sub: 'All time', color: brand.secondary, note: null },
           ].map((s, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.05 }}
@@ -367,6 +368,7 @@ export default function Dashboard() {
               <div className="text-2xl font-bold text-gray-900 leading-none">{s.value}</div>
               <div className="text-xs text-gray-400 mt-1.5 font-medium">{s.label}</div>
               <div className="text-xs mt-1 font-semibold" style={{ color: s.color }}>{s.sub}</div>
+              {s.note && <div className="text-xs mt-1 text-gray-400">{s.note}</div>}
             </motion.div>
           ))}
         </div>
@@ -381,7 +383,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="font-bold text-gray-900 text-sm">Q1 Payout to {selectedNonprofit.shortName}</p>
-              <p className="text-gray-400 text-xs mt-0.5">Disbursed via Endaoment · April 1, 2026</p>
+              <p className="text-gray-400 text-xs mt-0.5">100% goes to your cause · Disbursed via Endaoment · April 1, 2026</p>
             </div>
             <div className="text-right">
               <p className="font-bold text-2xl" style={{ color: brand.primary }}>{daysLeft}</p>

@@ -438,7 +438,10 @@ export default function Settings() {
           className="bg-amber-50 rounded-3xl px-4 py-3.5" style={{ border: '1px solid #fde68a' }}>
           <p className="text-xs font-bold text-amber-700 uppercase tracking-widest mb-1">Monthly Billing</p>
           <p className="text-xs text-amber-800 leading-relaxed">
-            Charged once a month (minimum $5). If a payment fails, we'll retry once after 3 days. If it fails again, your account is paused and you'll be notified to update your payment method. Round-ups keep accumulating during a pause.
+            Your round-ups are charged once a month (minimum $5). <strong>100% of your round-up amount goes directly to your chosen cause.</strong> A separate platform service fee is also charged each month: <strong>10%</strong> for card or Apple Pay, or <strong>5%</strong> for bank account (ACH) — with a $2 minimum and $5 maximum. If a payment fails, we'll retry once after 3 days. If it fails again, your account is paused and you'll be notified to update your payment method. Round-ups keep accumulating during a pause.
+          </p>
+          <p className="text-xs text-amber-700 mt-2 font-medium">
+            Tip: Connect a bank account to pay a lower 5% service fee.
           </p>
         </motion.div>
 

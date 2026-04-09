@@ -162,7 +162,7 @@ export default function Activity() {
               <div className="rounded-3xl p-5 text-white" style={{ background: brand.gradient }}>
                 <p className="font-bold text-base mb-1">How Payouts Work</p>
                 <p className="text-white/80 text-sm leading-relaxed">
-                  Your round-ups accumulate each quarter and are sent directly to your chosen cause on the first of every quarter — Jan 1, Apr 1, Jul 1, Oct 1.
+                  Your round-ups accumulate each quarter and are sent directly to your chosen cause on the first of every quarter — Jan 1, Apr 1, Jul 1, Oct 1. <strong>100% of your round-up amount goes to your cause</strong> via Endaoment, a registered 501(c)(3) donor-advised fund. The platform service fee is a separate charge and is never deducted from your donation.
                 </p>
               </div>
 

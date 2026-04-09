@@ -26,7 +26,7 @@ const SLIDES = [
       </div>
     ),
     title: '',
-    subtitle: 'Turn everyday purchases into impactful donations — automatically.\nInspiring change, from your pocket.',
+    subtitle: '100% of your round-ups go to your chosen nonprofit — automatically.\nInspiring change, from your pocket.',
     cta: 'Get Started',
   },
   {
@@ -63,7 +63,7 @@ const SLIDES = [
       </div>
     ),
     title: 'Round Up Every\nPurchase',
-    subtitle: 'We round up each transaction to the nearest dollar. The spare change goes straight to your chosen nonprofit.',
+    subtitle: 'We round up each transaction to the nearest dollar. 100% of the spare change goes straight to your chosen nonprofit.',
     cta: 'Next',
   },
   {
@@ -508,22 +508,22 @@ const PAYMENT_OPTIONS = [
     id: 'ach',
     icon: '🏦',
     label: 'Bank Account',
-    sub: 'Direct bank transfer · 5% deducted from donation',
-    badge: 'Best for most people',
+    sub: 'Direct bank transfer · 5% service fee ($2–$5 cap)',
+    badge: 'Lowest fee',
     badgeColor: '#059669',
   },
   {
     id: 'apple_pay',
     icon: '🍎',
     label: 'Apple Pay',
-    sub: 'Set up once, fully automatic · 10% deducted from donation',
+    sub: 'Set up once, fully automatic · 10% service fee ($2–$5 cap)',
     badge: null,
   },
   {
     id: 'card',
     icon: '💳',
     label: 'Credit or Debit Card',
-    sub: 'Visa, Mastercard, Amex, or Discover · 10% deducted from donation',
+    sub: 'Visa, Mastercard, Amex, or Discover · 10% service fee ($2–$5 cap)',
     badge: null,
   },
 ];
@@ -634,7 +634,7 @@ function PaymentMethodScreen({ onNext }) {
             {selected === 'card' ? 'Continue — Add Card →' : selected ? 'Continue — Pick Your Cause →' : 'Choose a payment method'}
           </motion.button>
           <p className="text-center text-gray-400 text-xs leading-relaxed px-2 mt-3">
-            A small fee is deducted from your round-up total — <span className="font-semibold">5%</span> for ACH or <span className="font-semibold">10%</span> for Apple Pay &amp; card. You are never charged extra. The remainder goes directly to your cause via <span className="font-semibold">Endaoment</span>, a registered 501(c)(3) donor-advised fund. Tax receipts issued automatically.
+            <span className="font-semibold text-gray-600">100% of your round-ups go to your chosen cause.</span> A separate platform service fee is charged: <span className="font-semibold">5%</span> for bank account or <span className="font-semibold">10%</span> for Apple Pay &amp; card ($2 minimum, $5 maximum). The fee is a separate charge — never deducted from your donation. Donations go to your cause via <span className="font-semibold">Endaoment</span>, a registered 501(c)(3) donor-advised fund. Tax receipts issued automatically.
           </p>
         </div>
       </div>

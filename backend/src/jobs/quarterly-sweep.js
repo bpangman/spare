@@ -3,21 +3,21 @@
  * Schedule: runs on Jan 1, Apr 1, Jul 1, Oct 1 at 8am (configured in server.js)
  *
  * What it does:
- *  1. Gets current Stripe Treasury balance
- *  2. Initiates an ACH OutboundTransfer from Treasury → Endaoment's bank account
- *  3. Calls Endaoment API to submit individual grants to each user's chosen nonprofit
- *     (proportional split based on each user's accumulated net donations that quarter)
- *  4. Endaoment issues tax receipts to users automatically
- *  5. Records everything in quarterly_disbursements table
+ *  1. Sums all successful monthly charges from the quarter (these are the donation amounts)
+ *  2. Calls Endaoment API to submit individual grants to each user's chosen nonprofit
+ *     (proportional split based on each user's accumulated round-ups that quarter)
+ *  3. Endaoment issues tax receipts to users automatically
+ *  4. Records everything in quarterly_disbursements table
  *
- * Revenue note:
- *  - Platform fees (5-10%) were already taken at charge time
- *  - Interest earned on the Treasury float accrues automatically — Stripe pays it out
- *    on their schedule (confirm exact mechanism with Stripe during Treasury onboarding)
+ * Revenue model:
+ *  - 100% of round-up amounts go directly to charity — nothing is held back
+ *  - PocketCache revenue = service fees, which were already collected as separate
+ *    PaymentIntents at charge time (see monthly-charge.js)
+ *  - No Stripe Treasury required — funds are held in the standard Stripe balance
+ *    and grants are submitted to Endaoment directly via their API
  */
 
 import db from '../db/index.js';
-import { getTreasuryBalance, sweepToEndaoment } from '../services/treasury.js';
 import { submitGrant } from '../services/endaoment.js';
 import { randomUUID } from 'crypto';
 
@@ -27,30 +27,35 @@ export async function runQuarterlySweep() {
   const period = getCurrentQuarter(); // e.g. '2026-Q1'
   console.log(`[quarterly-sweep] Starting for period ${period}...`);
 
-  // Check how much is in Treasury
-  const balanceCents = await getTreasuryBalance();
-  const balanceDollars = balanceCents / 100;
+  // Calculate total successful donations this quarter from monthly_charges
+  const quarterMonths = getQuarterMonths(period); // e.g. ['2026-01', '2026-02', '2026-03']
+  const placeholders = quarterMonths.map(() => '?').join(', ');
 
-  if (balanceDollars < MINIMUM_DISBURSEMENT) {
-    console.log(`[quarterly-sweep] Treasury balance $${balanceDollars} below minimum — skipping`);
+  const totalRow = db.prepare(`
+    SELECT SUM(net_amount) as total_amount
+    FROM monthly_charges
+    WHERE status = 'succeeded'
+      AND period IN (${placeholders})
+  `).get(...quarterMonths);
+
+  const totalDollars = totalRow?.total_amount ?? 0;
+
+  if (totalDollars < MINIMUM_DISBURSEMENT) {
+    console.log(`[quarterly-sweep] Total donations $${totalDollars} below minimum — skipping`);
     return;
   }
 
-  console.log(`[quarterly-sweep] Treasury balance: $${balanceDollars}`);
+  console.log(`[quarterly-sweep] Total to disburse: $${totalDollars}`);
 
   // Create disbursement record
   const disbursementId = randomUUID();
   db.prepare(`
     INSERT INTO quarterly_disbursements (id, period, total_amount)
     VALUES (?, ?, ?)
-  `).run(disbursementId, period, balanceDollars);
+  `).run(disbursementId, period, totalDollars);
 
   try {
-    // Step 1: Transfer Treasury balance → Endaoment's bank account
-    await sweepToEndaoment(balanceCents, disbursementId);
-    console.log(`[quarterly-sweep] Swept $${balanceDollars} to Endaoment bank account`);
-
-    // Step 2: Calculate each nonprofit's share.
+    // Calculate each nonprofit's share.
     // IMPORTANT: group by roundup.cause_org_id (the cause at time of accumulation),
     // NOT users.cause_org_id (current cause). This ensures mid-month cause switches
     // are handled correctly — round-ups already logged keep their original cause.
@@ -61,16 +66,16 @@ export async function runQuarterlySweep() {
       FROM roundups r
       JOIN monthly_charges mc ON r.included_in = mc.id
       WHERE mc.status = 'succeeded'
-        AND mc.period LIKE ?
+        AND mc.period IN (${placeholders})
       GROUP BY r.cause_org_id
-    `).all(`${getQuarterMonthPattern(period)}%`);
+    `).all(...quarterMonths);
 
     const grandTotal = orgTotals.reduce((sum, r) => sum + r.total_roundup, 0);
 
-    // Step 3: Submit a grant to Endaoment for each nonprofit.
-    // Each org gets its exact proportional share of the Treasury balance.
+    // Submit a grant to Endaoment for each nonprofit.
+    // Each org gets its exact proportional share of the quarter's donations.
     for (const org of orgTotals) {
-      const share = (org.total_roundup / grandTotal) * balanceDollars;
+      const share = (org.total_roundup / grandTotal) * totalDollars;
       const grantAmount = Math.floor(share * 100) / 100; // round down to avoid overdraft
 
       if (grantAmount < 1.00) {
@@ -81,7 +86,7 @@ export async function runQuarterlySweep() {
       const grant = await submitGrant({
         orgId: org.cause_org_id,
         amountDollars: grantAmount,
-        description: `Spare ${period} quarterly donation`,
+        description: `PocketCache ${period} quarterly donation — 100% of user round-ups`,
         metadata: { disbursement_id: disbursementId, period },
       });
 
@@ -95,7 +100,7 @@ export async function runQuarterlySweep() {
       WHERE id = ?
     `).run(disbursementId);
 
-    console.log(`[quarterly-sweep] Done. $${balanceDollars} disbursed to ${orgTotals.length} nonprofits.`);
+    console.log(`[quarterly-sweep] Done. $${totalDollars} disbursed to ${orgTotals.length} nonprofits.`);
 
   } catch (err) {
     db.prepare(`UPDATE quarterly_disbursements SET status = 'failed' WHERE id = ?`).run(disbursementId);
@@ -111,12 +116,12 @@ function getCurrentQuarter() {
   return `${now.getFullYear()}-Q${q}`;
 }
 
-// Returns the three month prefixes for a quarter, e.g. Q1 → ['2026-01', '2026-02', '2026-03']
-// Used for DB query — we use LIKE match on period column
-function getQuarterMonthPattern(quarterStr) {
-  const [year, q] = quarterStr.split('-Q');
-  const startMonth = (parseInt(q) - 1) * 3 + 1;
-  return `${year}-`; // simplified — query handles this with month range
+// Returns the three YYYY-MM strings for a given quarter, e.g. '2026-Q1' → ['2026-01','2026-02','2026-03']
+function getQuarterMonths(quarterStr) {
+  const [year, qPart] = quarterStr.split('-Q');
+  const q = parseInt(qPart, 10);
+  const startMonth = (q - 1) * 3 + 1;
+  return [startMonth, startMonth + 1, startMonth + 2].map(m => `${year}-${String(m).padStart(2, '0')}`);
 }
 
 // Allow running directly: node src/jobs/quarterly-sweep.js

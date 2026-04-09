@@ -4,21 +4,21 @@
  *
  * What it does:
  *  1. For each active user, sum all un-swept round-ups from the past month
- *  2. If total >= $5.00 minimum, charge their payment method via Stripe
- *  3. On success: mark round-ups as swept, deposit net amount to Stripe Treasury
+ *  2. If total >= $5.00 minimum, charge their payment method via Stripe (TWO charges)
+ *  3. On success: mark round-ups as swept; full donation amount queued for Endaoment disbursement
  *  4. On failure: retry once after 3 days; if retry fails, pause account + notify user
  *
- * Fee deduction:
- *  - Gross amount = sum of round-ups (what user is charged)
- *  - Platform fee = 5% (ACH) or 10% (Apple Pay/Card)
- *  - Net amount = gross - fee → this goes to Stripe Treasury for later Endaoment disbursement
+ * Fee model:
+ *  - Donation charge = full round-up total → 100% goes to charity via Endaoment
+ *  - Service fee charge = separate charge: 5% (ACH) or 10% (card/Apple Pay), $2 min, $5 max
+ *  - PocketCache revenue = service fees only (never deducted from donations)
  */
 
 import db from '../db/index.js';
-import { chargeUser } from '../services/stripe.js';
-import { depositToTreasury } from '../services/treasury.js';
+import { chargeUser, calculatePlatformFee } from '../services/stripe.js';
 import { randomUUID } from 'crypto';
 
+// Minimum monthly round-up total before we charge. Balances below this roll over.
 const MINIMUM_CHARGE = 5.00;
 
 export async function runMonthlyCharge() {
@@ -45,14 +45,14 @@ export async function runMonthlyCharge() {
     try {
       // Create the charge record first (so we have an ID for metadata)
       const chargeId = randomUUID();
-      const feeRate = user.payment_method === 'ach' ? 0.05 : 0.10;
-      const platformFee = Math.round(user.total_roundup * feeRate * 100) / 100;
-      const netAmount = Math.round((user.total_roundup - platformFee) * 100) / 100;
+      // Fee is a separate charge — does NOT reduce the donation amount
+      const platformFee = calculatePlatformFee(user.total_roundup, user.payment_method);
+      const donationAmount = user.total_roundup; // full amount goes to charity
 
       db.prepare(`
         INSERT INTO monthly_charges (id, user_id, period, gross_amount, platform_fee, net_amount)
         VALUES (?, ?, ?, ?, ?, ?)
-      `).run(chargeId, user.id, period, user.total_roundup, platformFee, netAmount);
+      `).run(chargeId, user.id, period, user.total_roundup, platformFee, donationAmount);
 
       // Charge the user
       const result = await chargeUser(
@@ -64,7 +64,7 @@ export async function runMonthlyCharge() {
       );
 
       if (result.status === 'succeeded') {
-        await onChargeSucceeded(chargeId, user, result, netAmount);
+        await onChargeSucceeded(chargeId, user, result, donationAmount);
       } else {
         // Payment requires further action or is processing async
         // The webhook handler will call onChargeSucceeded / onChargeFailed
@@ -84,27 +84,26 @@ export async function runMonthlyCharge() {
 
 /**
  * Called after a successful charge (either immediately or via webhook).
+ * donationAmount is the full round-up total — 100% of this goes to charity via Endaoment.
+ * The service fee was already collected via the separate fee PaymentIntent.
  */
-export async function onChargeSucceeded(chargeId, user, stripeResult, netAmount) {
-  const netCents = Math.round(netAmount * 100);
-
+export async function onChargeSucceeded(chargeId, user, stripeResult, donationAmount) {
   // Mark round-ups as swept
   db.prepare(`
     UPDATE roundups SET included_in = ?
     WHERE user_id = ? AND included_in IS NULL
   `).run(chargeId, user.id);
 
-  // Update charge record
+  // Update charge record — net_amount = full donation (fee is separate)
   db.prepare(`
     UPDATE monthly_charges
     SET status = 'succeeded', stripe_payment_intent_id = ?, charged_at = unixepoch()
     WHERE id = ?
   `).run(stripeResult.paymentIntentId, chargeId);
 
-  // Deposit net amount to Stripe Treasury
-  await depositToTreasury(netCents, chargeId);
-
-  console.log(`[monthly-charge] User ${user.id}: charged $${user.total_roundup}, $${netAmount} deposited to Treasury`);
+  // No treasury deposit needed — the quarterly sweep job reads from monthly_charges
+  // and submits the full donation amount directly to Endaoment via their API.
+  console.log(`[monthly-charge] User ${user.id}: charged $${user.total_roundup} donation + $${stripeResult.platformFeeCents / 100} service fee`);
 }
 
 /**
