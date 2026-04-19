@@ -253,7 +253,7 @@
     <div class="header-meta">
       <div class="meta-pill">📱 <a href="https://bpangman.github.io/pocketcache/" target="_blank">Live App (v2)</a></div>
       <div class="meta-pill">💻 <a href="https://github.com/bpangman/pocketcache" target="_blank">GitHub Repo</a></div>
-      <div class="meta-pill">📋 Last updated: <span id="last-updated">March 25, 2026</span></div>
+      <div class="meta-pill">📋 Last updated: <span id="last-updated">April 19, 2026</span></div>
     </div>
   </div>
 </header>
@@ -435,13 +435,97 @@
         </div>
 
         <div class="check-item">
-          <div class="check-icon na">–</div>
+          <div class="check-icon pending">!</div>
           <div class="check-text">
-            <div class="title">Charitable solicitation registration (50 states)</div>
-            <div class="sub">Solved — Endaoment DAF model handles this entirely. You do not register separately.</div>
+            <div class="title">Charitable solicitation registration (50 states) <span class="tag todo">Open question</span></div>
+            <div class="sub">Endaoment confirmed (4/8) that their 501(c)(3) status does NOT extend to partner platforms. PocketCache may need to register in the ~41 states that require it, depending on fund structure. Consulting counsel.</div>
           </div>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DAF Partner Comparison ── -->
+  <div>
+    <div class="section-label">DAF Partner Comparison</div>
+    <div class="card">
+      <p style="margin:0 0 1rem;">PocketCache is evaluating DAF partners to power nonprofit disbursement and tax receipts — new entries will be added here as we meet with each suitor.</p>
+
+      <!-- Endaoment -->
+      <div style="border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:.5rem;">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem;">
+          <span class="dot amber"></span>
+          <strong style="font-size:1rem;">Endaoment</strong>
+          <span style="color:var(--muted);font-size:.85rem;">via Giving Tree Technologies, d/b/a Endaoment.tech</span>
+          <span class="tag todo" style="margin-left:auto;">In discussion</span>
+        </div>
+
+        <div class="check-item" style="margin-bottom:.4rem;">
+          <div class="check-text">
+            <div class="title" style="font-size:.85rem;color:var(--muted);font-weight:500;">Contact</div>
+            <div class="sub">Zach Bronstein, COO — zach@givingtree.tech · 201.463.1955</div>
+          </div>
+        </div>
+
+        <div class="check-item" style="margin-bottom:.4rem;">
+          <div class="check-text">
+            <div class="title" style="font-size:.85rem;color:var(--muted);font-weight:500;">Status</div>
+            <div class="sub">Demo scheduled Tue 4/21 at 12pm CT</div>
+          </div>
+        </div>
+
+        <div class="check-item" style="margin-bottom:.4rem;">
+          <div class="check-text">
+            <div class="title" style="font-size:.85rem;color:var(--muted);font-weight:500;">Fee structure</div>
+            <div class="sub">
+              0% on assets held inside DAFs &nbsp;·&nbsp;
+              0.5% on inbound donations (money into DAF) &nbsp;·&nbsp;
+              1.0% on outbound grants (DAF → nonprofit)<br>
+              <strong>Effective ~1.5% per donation.</strong>
+              Additional variable onboarding fee + quarterly maintenance fee if custom infrastructure is required.
+            </div>
+          </div>
+        </div>
+
+        <div class="check-item" style="margin-bottom:.4rem;">
+          <div class="check-text">
+            <div class="title" style="font-size:.85rem;color:var(--muted);font-weight:500;">Hold time</div>
+            <div class="sub">No minimum. Offers a "direct donation" mode that skips the DAF and goes straight to nonprofits — DAF runs invisibly in the background.</div>
+          </div>
+        </div>
+
+        <div class="check-item" style="margin-bottom:.4rem;">
+          <div class="check-text">
+            <div class="title" style="font-size:.85rem;color:var(--muted);font-weight:500;">Volume / balance minimums</div>
+            <div class="sub">None.</div>
+          </div>
+        </div>
+
+        <div class="check-item" style="margin-bottom:.4rem;">
+          <div class="check-text">
+            <div class="title" style="font-size:.85rem;color:var(--muted);font-weight:500;">Charitable solicitation coverage</div>
+            <div class="sub"><strong>NOT covered.</strong> Endaoment's 501(c)(3) status does NOT extend to partner platforms. PocketCache may need to register independently depending on how funds are structured. Zach recommends consulting counsel.</div>
+          </div>
+        </div>
+
+        <div class="check-item" style="margin-bottom:.4rem;">
+          <div class="check-text">
+            <div class="title" style="font-size:.85rem;color:var(--muted);font-weight:500;">Tax receipts</div>
+            <div class="sub">Issued automatically by Endaoment to donors.</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.75rem;">
+          <div style="background:var(--green-light);border-radius:8px;padding:.75rem;">
+            <div style="font-weight:600;color:var(--green);font-size:.8rem;margin-bottom:.4rem;">Pros</div>
+            <div class="sub">Zero minimums · flexible direct-or-DAF architecture · established DAF sponsor · automatic tax receipts to donors</div>
+          </div>
+          <div style="background:var(--red-light,#fff1f2);border-radius:8px;padding:.75rem;">
+            <div style="font-weight:600;color:var(--red,#e11d48);font-size:.8rem;margin-bottom:.4rem;">Cons</div>
+            <div class="sub">Charitable solicitation burden stays with PocketCache (previously assumed covered) · custom infrastructure costs unquantified</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
